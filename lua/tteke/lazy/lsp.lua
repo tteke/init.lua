@@ -43,7 +43,17 @@ return {
           }
         end,
 
-        zls = function()
+        ["rust_analyzer"] = function ()
+          local lspconfig = require("lspconfig")
+
+          lspconfig.rust_analyzer.setup {
+            on_attach = function (_, bufnr) -- _ is client
+              vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+            end
+          }
+        end,
+
+        zls = function() -- zig language server
           local lspconfig = require("lspconfig")
           lspconfig.zls.setup({
             root_dir = lspconfig.util.root_pattern(".git", "build.zig", "zls.json"),
@@ -59,6 +69,7 @@ return {
           vim.g.zig_fmt_autosave = 0
 
         end,
+
         ["lua_ls"] = function()
           local lspconfig = require("lspconfig")
           lspconfig.lua_ls.setup {
@@ -88,7 +99,7 @@ return {
         ['<S-Tab>'] = cmp.mapping.select_prev_item(cmp_select),
         ['<Tab>'] = cmp.mapping.select_next_item(cmp_select),
         ['<CR>'] = cmp.mapping.confirm({ select = true }),
-        ["<C-Space>"] = cmp.mapping.complete(),
+        ['<C-n>'] = cmp.mapping.complete(),
       }),
       sources = cmp.config.sources({
         { name = 'nvim_lsp' },
