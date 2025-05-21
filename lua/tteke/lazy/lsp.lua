@@ -17,10 +17,11 @@ return {
     local cmp = require('cmp')
     local cmp_lsp = require("cmp_nvim_lsp")
     local capabilities = vim.tbl_deep_extend(
-    "force",
-    {},
-    vim.lsp.protocol.make_client_capabilities(),
-    cmp_lsp.default_capabilities())
+      "force",
+      {},
+      vim.lsp.protocol.make_client_capabilities(),
+      cmp_lsp.default_capabilities()
+    )
 
     require("fidget").setup({})
     require("mason").setup()
@@ -43,13 +44,14 @@ return {
           }
         end,
 
-        ["rust_analyzer"] = function ()
+        ["rust_analyzer"] = function()
           local lspconfig = require("lspconfig")
 
           lspconfig.rust_analyzer.setup {
-            on_attach = function (_, bufnr) -- _ is client
+            on_attach = function(_, bufnr) -- _ is client
               vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-            end
+            end,
+            capabilities = capabilities,
           }
         end,
 
@@ -67,7 +69,6 @@ return {
           })
           vim.g.zig_fmt_parse_errors = 0
           vim.g.zig_fmt_autosave = 0
-
         end,
 
         ["lua_ls"] = function()
@@ -84,10 +85,16 @@ return {
             }
           }
         end,
+        ["ts_ls"] = function()
+          local lspconfig = require("lspconfig")
+
+          lspconfig.ts_ls.setup {}
+        end,
       }
     })
 
     local cmp_select = { behavior = cmp.SelectBehavior.Select }
+
 
     cmp.setup({
       snippet = {
@@ -100,6 +107,8 @@ return {
         ['<Tab>'] = cmp.mapping.select_next_item(cmp_select),
         ['<CR>'] = cmp.mapping.confirm({ select = true }),
         ['<C-n>'] = cmp.mapping.complete(),
+        ['<C-d>'] = cmp.mapping.scroll_docs(4),
+        ['<C-u>'] = cmp.mapping.scroll_docs(-4),
       }),
       sources = cmp.config.sources({
         { name = 'nvim_lsp' },
