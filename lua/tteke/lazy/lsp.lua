@@ -30,14 +30,14 @@ return {
         "lua_ls",
         "rust_analyzer",
         "gopls",
-        "ts_ls",
         "pyright",
-        "biome",
         "tailwindcss",
         "cssls",
         "yamlls",
+        "vtsls"
       },
       handlers = {
+
         function(server_name) -- default handler (optional)
           require("lspconfig")[server_name].setup {
             capabilities = capabilities
@@ -85,11 +85,11 @@ return {
             }
           }
         end,
-        ["ts_ls"] = function()
-          local lspconfig = require("lspconfig")
-
-          lspconfig.ts_ls.setup {}
-        end,
+        -- ["ts_ls"] = function()
+        --   local lspconfig = require("lspconfig")
+        --
+        --   lspconfig.ts_ls.setup {}
+        -- end,
       }
     })
 
