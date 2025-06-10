@@ -16,5 +16,5 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
   spec = "tteke.lazy",
-  change_detection = { notify = false }
+  change_detection = { notify = true }
 })
