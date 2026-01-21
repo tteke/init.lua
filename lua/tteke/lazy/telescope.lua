@@ -16,6 +16,19 @@ return {
       },
     })
 
+    local file_ignore_patterns = {
+			"yarn%.lock",
+			"node_modules/",
+			"raycast/",
+			"dist/",
+			"%.next",
+			"%.git/",
+			"%.gitlab/",
+			"build/",
+			"target/",
+			"package%-lock%.json",
+		}
+
     local builtin = require('telescope.builtin')
     vim.keymap.set('n', '<leader>pf', builtin.find_files, {})
     vim.keymap.set('n', '<C-p>', builtin.git_files, {})
@@ -28,7 +41,7 @@ return {
       builtin.grep_string({ search = word })
     end)
     vim.keymap.set('n', '<leader>ps', function()
-      builtin.grep_string({ search = vim.fn.input("Grep > ") })
+      builtin.grep_string({ search = vim.fn.input("Grep > "), file_ignore_patterns = file_ignore_patterns })
     end)
     vim.keymap.set('n', '<leader>vh', builtin.help_tags, {})
   end

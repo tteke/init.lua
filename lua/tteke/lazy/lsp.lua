@@ -34,13 +34,31 @@ return {
         "tailwindcss",
         "cssls",
         "yamlls",
-        "vtsls"
+        "vtsls",
+        "clangd"
       },
       handlers = {
 
         function(server_name) -- default handler (optional)
           require("lspconfig")[server_name].setup {
             capabilities = capabilities
+          }
+        end,
+
+        ["clangd"] = function()
+          local lspconfig = require("lspconfig")
+
+          lspconfig.clangd.setup {
+            cmd = {
+              "clangd",
+              "--background-index",
+              "--clang-tidy",
+              "--header-insertion=iwyu",
+              "--completion-style=detailed",
+              "--function-arg-placeholders=1",
+              "--fallback-style=llvm",
+              "--log=error"
+            }
           }
         end,
 
