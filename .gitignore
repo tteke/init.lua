@@ -1,0 +1,23 @@
+# lazy.nvim lockfile (auto-generated, can optionally track it)
+# Uncomment the next line if you do NOT want to version-lock your plugins:
+lazy-lock.json
+
+# Plugin install directory (managed by lazy.nvim)
+plugin/
+
+# Mason installed tools
+mason/
+
+# Neovim swap, backup, undo, shada
+*.swp
+*.swo
+*~
+.netrwhist
+.shada
+
+# Compiled treesitter parsers (auto-downloaded)
+parser/
+
+# Misc OS files
+.DS_Store
+Thumbs.db
