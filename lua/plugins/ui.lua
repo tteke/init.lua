@@ -13,40 +13,42 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     event = "VeryLazy",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = {
-      options = {
-        theme = "catppuccin",
-        globalstatus = true,
-        component_separators = { left = "", right = "" },
-        section_separators = { left = "", right = "" },
-        disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
-      },
-      sections = {
-        lualine_a = { "mode" },
-        lualine_b = { "branch" },
-        lualine_c = {
-          { "diagnostics" },
-          { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
-          { "filename", path = 1 }, -- Relative path
+    dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin/nvim" },
+    config = function()
+      require("lualine").setup({
+        options = {
+          theme = "catppuccin-mocha",
+          globalstatus = true,
+          component_separators = { left = "", right = "" },
+          section_separators = { left = "", right = "" },
+          disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
         },
-        lualine_x = {
-          {
-            "diff",
-            symbols = { added = " ", modified = " ", removed = " " },
+        sections = {
+          lualine_a = { "mode" },
+          lualine_b = { "branch" },
+          lualine_c = {
+            { "diagnostics" },
+            { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
+            { "filename", path = 1 }, -- Relative path
+          },
+          lualine_x = {
+            {
+              "diff",
+              symbols = { added = " ", modified = " ", removed = " " },
+            },
+          },
+          lualine_y = {
+            { "progress", separator = " ", padding = { left = 1, right = 0 } },
+            { "location", padding = { left = 0, right = 1 } },
+          },
+          lualine_z = {
+            function()
+              return " " .. os.date("%R")
+            end,
           },
         },
-        lualine_y = {
-          { "progress", separator = " ", padding = { left = 1, right = 0 } },
-          { "location", padding = { left = 0, right = 1 } },
-        },
-        lualine_z = {
-          function()
-            return " " .. os.date("%R")
-          end,
-        },
-      },
-    },
+      })
+    end,
   },
 
   -- Buffer tabs

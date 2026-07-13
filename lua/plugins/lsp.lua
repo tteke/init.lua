@@ -1,7 +1,23 @@
 -- ╔══════════════════════════════════════════════════════════════╗
 -- ║            LSP · Mason · Language Servers                   ║
--- ║  This is the core — makes go-to-definition etc. work       ║
+-- ║  Native vim.lsp.config / vim.lsp.enable (Neovim 0.11+)     ║
 -- ╚══════════════════════════════════════════════════════════════╝
+
+-- ── All servers to enable ──────────────────────────────────────
+local servers = {
+  "clangd",                           -- C / C++ / CUDA
+  "ts_ls",                            -- JavaScript / TypeScript / JSX / TSX
+  "cssls",                            -- CSS / SCSS / LESS
+  "html",                             -- HTML
+  "pyright",                          -- Python
+  "dockerls",                         -- Dockerfile
+  "docker_compose_language_service",  -- docker-compose.yml
+  "marksman",                         -- Markdown
+  "yamlls",                           -- YAML
+  "sqlls",                            -- SQL
+  "bashls",                           -- Bash / sh
+  "lua_ls",                           -- Lua (for nvim config editing)
+}
 
 return {
   -- ─── Mason: manages LSP server binaries ──────────────────────
@@ -54,25 +70,15 @@ return {
       "neovim/nvim-lspconfig",
     },
     opts = {
-      ensure_installed = {
-        "clangd",                           -- C / C++ / CUDA
-        "ts_ls",                            -- JavaScript / TypeScript / JSX / TSX
-        "cssls",                            -- CSS / SCSS / LESS
-        "html",                             -- HTML
-        "pyright",                          -- Python
-        "dockerls",                         -- Dockerfile
-        "docker_compose_language_service",  -- docker-compose.yml
-        "marksman",                         -- Markdown
-        "yamlls",                           -- YAML
-        "sqls",                             -- SQL
-        "bashls",                           -- Bash / sh
-        "lua_ls",                           -- Lua (for nvim config editing)
-      },
+      ensure_installed = servers,
       automatic_installation = true,
     },
   },
 
-  -- ─── nvim-lspconfig: configure each server ──────────────────
+  -- ─── nvim-lspconfig: provides default server definitions ─────
+  -- We no longer call require('lspconfig').<server>.setup().
+  -- Instead, server configs live in lsp/<server>.lua and are
+  -- auto-discovered by Neovim. We use vim.lsp.config / vim.lsp.enable.
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
@@ -82,8 +88,6 @@ return {
       "WhoIsSethDaniel/mason-tool-installer.nvim",
     },
     config = function()
-      local lspconfig = require("lspconfig")
-
       -- ── Diagnostics UI ──────────────────────────────────────
       vim.diagnostic.config({
         underline = true,
@@ -124,10 +128,10 @@ return {
           map("n", "gy", function() require("telescope.builtin").lsp_type_definitions({ reuse_win = true }) end, "Go to Type Definition")
           map("n", "gD", vim.lsp.buf.declaration, "Go to Declaration")
 
-          -- Hover & signature
-          map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
-          map("n", "gK", vim.lsp.buf.signature_help, "Signature Help")
-          map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
+          -- Hover & signature (borders passed directly — no vim.lsp.with)
+          map("n", "K", function() vim.lsp.buf.hover({ border = "rounded" }) end, "Hover Documentation")
+          map("n", "gK", function() vim.lsp.buf.signature_help({ border = "rounded" }) end, "Signature Help")
+          map("i", "<C-k>", function() vim.lsp.buf.signature_help({ border = "rounded" }) end, "Signature Help")
 
           -- Actions (LazyVim defaults)
           map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
@@ -142,157 +146,21 @@ return {
         end,
       })
 
-      -- ── Rounded borders on hover/signature ──────────────────
-      vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
-        vim.lsp.handlers.hover, { border = "rounded" }
-      )
-      vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
-        vim.lsp.handlers.signature_help, { border = "rounded" }
-      )
-
-      -- ── Get capabilities from blink.cmp ─────────────────────
+      -- ── Shared capabilities (blink.cmp) for all servers ─────
       local capabilities = nil
       local ok, blink = pcall(require, "blink.cmp")
       if ok then
         capabilities = blink.get_lsp_capabilities()
       end
 
-      -- ── Default config for all servers ──────────────────────
-      local default_opts = {
+      -- Apply shared config to all servers via the '*' wildcard
+      vim.lsp.config("*", {
         capabilities = capabilities,
-      }
+      })
 
-      -- ── Server-specific configurations ──────────────────────
-
-      -- C / C++ / CUDA
-      lspconfig.clangd.setup(vim.tbl_deep_extend("force", default_opts, {
-        cmd = {
-          "clangd",
-          "--background-index",
-          "--clang-tidy",
-          "--header-insertion=iwyu",
-          "--completion-style=detailed",
-          "--function-arg-placeholders",
-          "--fallback-style=llvm",
-        },
-        filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
-        init_options = {
-          usePlaceholders = true,
-          completeUnimported = true,
-          clangdFileStatus = true,
-        },
-      }))
-
-      -- TypeScript / JavaScript / JSX / TSX
-      lspconfig.ts_ls.setup(vim.tbl_deep_extend("force", default_opts, {
-        settings = {
-          typescript = {
-            inlayHints = {
-              includeInlayParameterNameHints = "all",
-              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
-            },
-          },
-          javascript = {
-            inlayHints = {
-              includeInlayParameterNameHints = "all",
-              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
-            },
-          },
-        },
-      }))
-
-      -- CSS
-      lspconfig.cssls.setup(vim.tbl_deep_extend("force", default_opts, {
-        settings = {
-          css = { validate = true },
-          scss = { validate = true },
-          less = { validate = true },
-        },
-      }))
-
-      -- HTML
-      lspconfig.html.setup(vim.tbl_deep_extend("force", default_opts, {
-        filetypes = { "html", "htmldjango" },
-      }))
-
-      -- Python
-      lspconfig.pyright.setup(vim.tbl_deep_extend("force", default_opts, {
-        settings = {
-          python = {
-            analysis = {
-              typeCheckingMode = "basic",
-              autoSearchPaths = true,
-              useLibraryCodeForTypes = true,
-              diagnosticMode = "openFilesOnly",
-            },
-          },
-        },
-      }))
-
-      -- Dockerfile
-      lspconfig.dockerls.setup(default_opts)
-
-      -- Docker Compose
-      lspconfig.docker_compose_language_service.setup(default_opts)
-
-      -- Markdown
-      lspconfig.marksman.setup(default_opts)
-
-      -- YAML
-      lspconfig.yamlls.setup(vim.tbl_deep_extend("force", default_opts, {
-        settings = {
-          yaml = {
-            keyOrdering = false, -- Don't enforce key ordering
-            schemas = {
-              ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
-              ["https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json"] = "docker-compose*.yml",
-            },
-            validate = true,
-            completion = true,
-          },
-        },
-      }))
-
-      -- SQL
-      lspconfig.sqls.setup(default_opts)
-
-      -- Bash
-      lspconfig.bashls.setup(vim.tbl_deep_extend("force", default_opts, {
-        filetypes = { "sh", "bash", "zsh" },
-      }))
-
-      -- Lua (for editing Neovim config)
-      lspconfig.lua_ls.setup(vim.tbl_deep_extend("force", default_opts, {
-        settings = {
-          Lua = {
-            runtime = { version = "LuaJIT" },
-            workspace = {
-              checkThirdParty = false,
-              library = {
-                vim.env.VIMRUNTIME,
-                "${3rd}/luv/library",
-              },
-            },
-            completion = {
-              callSnippet = "Replace",
-            },
-            diagnostics = {
-              globals = { "vim" },
-            },
-            telemetry = { enable = false },
-          },
-        },
-      }))
+      -- ── Enable all servers ──────────────────────────────────
+      -- Server-specific configs are auto-discovered from lsp/<server>.lua
+      vim.lsp.enable(servers)
     end,
   },
 }

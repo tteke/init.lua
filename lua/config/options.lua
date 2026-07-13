@@ -42,8 +42,20 @@ opt.showmode = false -- Statusline handles this
 opt.splitright = true
 opt.splitbelow = true
 
--- Clipboard (system clipboard)
+-- Clipboard (system clipboard via wl-clipboard for Wayland)
 opt.clipboard = "unnamedplus"
+vim.g.clipboard = {
+  name = "wl-clipboard",
+  copy = {
+    ["+"] = "wl-copy",
+    ["*"] = "wl-copy",
+  },
+  paste = {
+    ["+"] = "wl-paste --no-newline",
+    ["*"] = "wl-paste --no-newline --primary",
+  },
+  cache_enabled = 0,
+}
 
 -- Undo persistence
 opt.undofile = true
@@ -82,8 +94,8 @@ opt.mouse = "a"
 
 -- Fillchars for cleaner UI
 opt.fillchars = {
-  foldopen = "",
-  foldclose = "",
+  foldopen = "▾",
+  foldclose = "▸",
   fold = " ",
   foldsep = " ",
   diff = "╱",

@@ -7,6 +7,13 @@ return {
     "nvim-telescope/telescope.nvim",
     cmd = "Telescope",
     version = false,
+    init = function()
+      local _ = vim.ui.select
+      vim.ui.select = function(...)
+        require("lazy").load({ plugins = { "telescope.nvim" } })
+        return vim.ui.select(...)
+      end
+    end,
     dependencies = {
       "nvim-lua/plenary.nvim",
       {
@@ -16,6 +23,7 @@ return {
           return vim.fn.executable("make") == 1
         end,
       },
+      "nvim-telescope/telescope-ui-select.nvim",
     },
     keys = {
       -- Files (LazyVim defaults)
@@ -95,8 +103,15 @@ return {
     end,
     config = function(_, opts)
       local telescope = require("telescope")
+      -- Override vim.ui.select with Telescope (fixes inputlist/keyboard-interrupt issues)
+      opts.extensions = vim.tbl_deep_extend("force", opts.extensions or {}, {
+        ["ui-select"] = {
+          require("telescope.themes").get_dropdown({}),
+        },
+      })
       telescope.setup(opts)
       pcall(telescope.load_extension, "fzf")
+      pcall(telescope.load_extension, "ui-select")
     end,
   },
 }
